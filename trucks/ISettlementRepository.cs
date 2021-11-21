@@ -1,4 +1,4 @@
-namespace Trucks.Server
+namespace Trucks
 {
     public interface ISettlementRepository
     {

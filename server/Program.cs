@@ -1,5 +1,6 @@
 using Trucks;
-using Trucks.Authentication;
+using Trucks.Server;
+using Trucks.Server.Authentication;
 using Google.Cloud.Logging.Console;
 
 var builder = WebApplication.CreateBuilder(args);
