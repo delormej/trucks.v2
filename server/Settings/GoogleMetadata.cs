@@ -1,6 +1,6 @@
 using Google.Api.Gax;
 
-namespace Trucks
+namespace Trucks.Server
 {   
     public static class GoogleMetadata
     {

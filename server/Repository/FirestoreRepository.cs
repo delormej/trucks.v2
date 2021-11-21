@@ -1,6 +1,6 @@
 using Google.Cloud.Firestore;
 
-namespace Trucks
+namespace Trucks.Server
 {
     public class FirestoreRepository : ISettlementRepository
     {

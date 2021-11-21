@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Google.Cloud.PubSub.V1;
 
-namespace Trucks
+namespace Trucks.Server
 {
     public class PublisherService
     {

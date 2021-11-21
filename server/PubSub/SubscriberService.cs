@@ -4,7 +4,7 @@ using Google.Api.Gax.ResourceNames;
 using Grpc.Core;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Trucks
+namespace Trucks.Server
 {
     public class SubscriberService : IHostedService
     {

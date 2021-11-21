@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace Trucks
+namespace Trucks.Server
 {
     /// <summary>
     /// SignalR hub.  This is an empty implementation of abstract Hub base class.

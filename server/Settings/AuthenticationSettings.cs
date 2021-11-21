@@ -1,4 +1,4 @@
-namespace Trucks
+namespace Trucks.Server
 {   
     public class AuthenticationSettings
     {

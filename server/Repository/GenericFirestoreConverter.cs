@@ -1,7 +1,7 @@
 using System.Reflection;
 using Google.Cloud.Firestore;
 
-namespace Trucks
+namespace Trucks.Server
 {
     /// <summary>
     /// Implements a generic custom converter to handle default POCO serialization

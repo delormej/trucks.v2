@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 
-namespace Trucks.Authentication
+namespace Trucks.Server.Authentication
 {
     public static class GoogleLoginJwtAuthentication
     {

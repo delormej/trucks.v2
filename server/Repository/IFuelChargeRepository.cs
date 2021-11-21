@@ -1,5 +1,5 @@
 
-namespace Trucks
+namespace Trucks.Server
 {
     public interface IFuelChargeRepository
     {

@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace Trucks.Authentication
+namespace Trucks.Server.Authentication
 {   
     public class ConfigureJwtBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
     {
