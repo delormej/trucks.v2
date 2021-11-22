@@ -43,7 +43,7 @@ namespace Trucks.Panther
     
         public IAsyncEnumerable<KeyValuePair<string, SettlementHistory>> DownloadSettlementsAsync(Func<SettlementHistory, bool> filter, int max = 10)
         {
-            // Method can't be marked async.
+            // Method can't be marked async with IAsyncEnumerable return type, so manually waiting
             var task = GetSettlementsAsync();
             task.Wait();
             List<SettlementHistory> settlements = task.Result;

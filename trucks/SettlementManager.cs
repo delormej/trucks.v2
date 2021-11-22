@@ -10,10 +10,12 @@ namespace Trucks
     {
         readonly IConfiguration _config;
         IConversionQueue _conversionQueue;
+        ExcelConverter _converter;
 
         public SettlementManager(IConfiguration config, ILogger<SettlementManager> log)
         {
             _config = config;
+            _converter = new ExcelConverter(_config["ZamzarKey"]);
         }
 
         /// <summary>
@@ -26,13 +28,12 @@ namespace Trucks
             DateTime watermark = DateTime.Now.AddMonths(-2);
 
             PantherClient panther = CreatePantherClient(companyId);
-            ExcelConverter converter = new ExcelConverter(_config["ZamzarKey"]);
 
             await foreach(var download in panther.DownloadSettlementsAsync(
                 (s => s.SettlementDate >= watermark)) )
             {
                 string filename = download.Key;
-                var result = await converter.UploadAsync(filename);
+                var result = await _converter.UploadAsync(filename);
 
                 var conversion = new ConvertState(download.Value, result.id, 
                         filename, DateTime.UtcNow);
@@ -43,14 +44,17 @@ namespace Trucks
 
         /// <summary>
         /// Downloads xlsx from conversion service, parses to business objects and
-        /// persists to repository.
+        /// persists to repository.  If conversion is not complete yet, adds back
+        /// to the queue.
         /// </summary>
-        /// <returns>
-        /// True if succesful, False if conversion job is not complete.  All error
-        /// conditions will be uncaught exceptions.
-        /// </returns>
-        public Task<bool> SaveConvertedAsync(ConvertState conversion)
+        public async Task SaveConvertedAsync(ConvertState state)
         {
+            var result = await _converter.QueryAsync(state.conversionJobId);
+            if (result.Success)
+            {
+
+            }
+            // Also check that it's not errored.
             throw new NotImplementedException();
         }
         
