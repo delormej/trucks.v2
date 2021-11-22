@@ -181,6 +181,7 @@ namespace Trucks.Excel
 
     public class ZamzarResult
     {
+        public bool Success => status == "successful";
         public int id { get; set; }
         public string status { get; set; }
 

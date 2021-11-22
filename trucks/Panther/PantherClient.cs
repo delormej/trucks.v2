@@ -41,43 +41,33 @@ namespace Trucks.Panther
             client = new HttpClient(clientHandler);
         }
     
-        public async Task<List<KeyValuePair<string, SettlementHistory>>> DownloadSettlementsAsync(DateTime settlementDate)
+        public IAsyncEnumerable<KeyValuePair<string, SettlementHistory>> DownloadSettlementsAsync(Func<SettlementHistory, bool> filter, int max = 10)
         {
-            Func<SettlementHistory, bool> filter = (s => s.SettlementDate == settlementDate);
-            return await DownloadSettlementsAsync(filter);
-        }
+            // Method can't be marked async.
+            var task = GetSettlementsAsync();
+            task.Wait();
+            List<SettlementHistory> settlements = task.Result;
 
-        /// <summary>
-        /// Downloads XLS (binary) settlement statements to local files in a directory for the specified company.
-        /// </summary>
-        public async Task<List<KeyValuePair<string, SettlementHistory>>> DownloadSettlementsAsync(bool overwrite = false, int max = 10)
-        {
-            Func<SettlementHistory, bool> filter = (s => overwrite || !Exists(s));
-            return await DownloadSettlementsAsync(filter);            
-        }
-
-        public async Task<List<KeyValuePair<string, SettlementHistory>>> DownloadSettlementsAsync(Func<SettlementHistory, bool> filter, int max = 10)
-        {
-            List<SettlementHistory> settlements = await GetSettlementsAsync();
             List<SettlementHistory> selectSettlements = settlements.Where(filter)
                 .OrderByDescending(s => s.SettlementDate)
                 .Take(max)
                 .ToList();
 
-            return await DownloadSettlementsAsync(selectSettlements);
+            return DownloadSettlementsAsync(selectSettlements);
         }
 
-        public async Task<List<KeyValuePair<string, SettlementHistory>>> DownloadSettlementsAsync(List<SettlementHistory> settlementsToDownload)
+        public async IAsyncEnumerable<KeyValuePair<string, SettlementHistory>> DownloadSettlementsAsync(List<SettlementHistory> settlementsToDownload)
         {
-            List<KeyValuePair<string, SettlementHistory>> downloaded = new List<KeyValuePair<string, SettlementHistory>>();
             foreach (SettlementHistory settlement in settlementsToDownload)
             {
                 string xls = await DownloadSettlementReportAsync(settlement.SettlementId);
-                downloaded.Add(new KeyValuePair<string, SettlementHistory>(xls, settlement));
                 System.Console.WriteLine($"Downloaded {settlement.SettlementId}: {xls}");
+                
+                var kvp = new KeyValuePair<string, SettlementHistory>(xls, settlement);
+
+                yield return kvp;
             }
-            
-            return downloaded;            
+            yield break;
         }        
 
         public async Task<List<SettlementHistory>> GetSettlementsAsync()
