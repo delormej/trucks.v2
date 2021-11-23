@@ -90,7 +90,7 @@ namespace Trucks.Panther
         public async Task<string> DownloadSettlementReportAsync(string checkNumber)
         {
             Directory.CreateDirectory(company);
-            string uri = pantherBaseUrl + $"/Financial/DownloadSettlementReport?ChkNo={checkNumber}";
+            string uri = pantherBaseUrl + $"/Financial/DownloadSettlementReport?ChkNo={checkNumber}&isArcBestCheck=false";
             byte[] bytes = await client.GetByteArrayAsync(uri);
             string filename = GetLocalFileName(company, checkNumber);
             File.WriteAllBytes(filename, bytes);
@@ -125,6 +125,7 @@ namespace Trucks.Panther
                 }
             }
             return isLoggedIn;
+            //ASP.NET_SessionId
         }
 
         private Task<string> GetPayrollHistAsync()

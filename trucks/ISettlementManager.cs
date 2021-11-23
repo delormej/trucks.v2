@@ -11,6 +11,6 @@ namespace Trucks
         SettlementHistory settlement,
         int conversionJobId,
         string xlsPath,
-        DateTime UploadTimestamp
+        DateTime uploadTimestampUtc
     );    
 }

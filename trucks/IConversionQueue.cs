@@ -2,6 +2,6 @@ namespace Trucks
 {
     public interface IConversionQueue
     {
-        void Add(ConvertState state, Func<ConvertState, Task> onConverted);
+        void Add(ConvertState state);
     }
 }
