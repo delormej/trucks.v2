@@ -27,7 +27,7 @@ namespace Trucks
             {
                 _timer = new Timer(Dequeue, null, 
                     TimeSpan.FromMinutes(DelayMins),
-                    TimeSpan.FromSeconds(30));
+                    TimeSpan.FromSeconds(10));
             }
         }
 
@@ -37,6 +37,7 @@ namespace Trucks
             
             if (!_queue.TryPeek(out convertState))
             {
+                Console.WriteLine("Nothing left in the queue.");
                 Finish();
                 return;
             }
@@ -45,7 +46,7 @@ namespace Trucks
             {
                 Interlocked.Increment(ref _activeCount);
 
-                DateTime readyTime = convertState.uploadTimestampUtc
+                DateTime readyTime = convertState.UploadTimestampUtc
                     .AddMinutes(DelayMins);
 
                 // Don't dequeue if not ready.
@@ -77,12 +78,14 @@ namespace Trucks
         {
             if (!IsActive())
             {
+                Console.WriteLine("No active jobs.");
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 _timer = null;
             }
 
              if (OnFinished != null)
              {
+                Console.WriteLine("Signaling finished.");
                 OnFinished(this, null);                 
              }
         }

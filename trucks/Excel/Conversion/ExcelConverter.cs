@@ -185,6 +185,7 @@ namespace Trucks.Excel
         public bool Failed => status == "failed";
         public int id { get; set; }
         public string status { get; set; }
+        public string finished_at { get; set; }
 
         public TargetFiles[] target_files { get; set; }        
 

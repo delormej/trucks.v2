@@ -5,12 +5,4 @@ namespace Trucks
         Task ConvertAsync(string companyId);
         Task SaveConvertedAsync(ConvertState conversion);
     }
-
-    public record ConvertState 
-    (
-        SettlementHistory settlement,
-        int conversionJobId,
-        string xlsPath,
-        DateTime uploadTimestampUtc
-    );    
 }

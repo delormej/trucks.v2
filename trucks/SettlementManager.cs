@@ -12,18 +12,20 @@ namespace Trucks
         ThreadedConversionQueue _conversionQueue;
         ExcelConverter _converter;
         ISettlementRepository _settlementRepository;
+        IFileRepository _file;
 
-        public SettlementManager(ISettlementRepository repository, IConfiguration config, 
+        public SettlementManager(ISettlementRepository repository, IFileRepository file,
+                EventHandler onFinished,
+                IConfiguration config, 
                 ILogger<SettlementManager> log)
         {
             _config = config;
             _converter = new ExcelConverter(_config["ZamzarKey"]);
             _settlementRepository = repository;
+            _file = file;
+
             _conversionQueue = new ThreadedConversionQueue(SaveConvertedAsync);
-            _conversionQueue.OnFinished += (o, e) => 
-            {
-                System.Console.WriteLine("Finished");
-            };
+            _conversionQueue.OnFinished += onFinished;
         }
 
         /// <summary>
@@ -32,28 +34,27 @@ namespace Trucks
         /// </summary>
         public async Task ConvertAsync(string companyId)
         {
-            // var c = new ConvertState(
-            //     settlement: new SettlementHistory() { CompanyId = 170087 },
-            //     conversionJobId: 23533273, 
-            //     xlsPath: "170087/CD658438.xls",
-            //     uploadTimestampUtc: DateTime.UtcNow.AddDays(-1));
-            // _conversionQueue.Add(c);
-            // return;
-
-            // TODO: Just grab last 2 months for right now.
-            DateTime watermark = DateTime.Now.AddMonths(-3);
+            var watermark = await GetWatermarkAsync(companyId);
 
             PantherClient panther = CreatePantherClient(companyId);
 
             await foreach(var download in panther.DownloadSettlementsAsync(
-                (s => s.SettlementDate >= watermark), 1))
+                watermark.Filter(), 4))
             {
                 string filename = download.Key;
                 var result = await _converter.UploadAsync(filename);
+                
+                var cloudPath = await _file.SaveAsync(filename);
+
                 Console.WriteLine($"Uploaded {filename}");
 
-                var conversion = new ConvertState(download.Value, result.id, 
-                        filename, DateTime.UtcNow);
+                var conversion = new ConvertState{
+                    ConversionJobId = result.id,
+                    Settlement = download.Value,
+                    LocalXlsPath = filename,
+                    CloudPath = cloudPath,
+                    UploadTimestampUtc = DateTime.UtcNow
+                };
                 
                 _conversionQueue.Add(conversion);
             }
@@ -66,19 +67,23 @@ namespace Trucks
         /// </summary>
         public async Task SaveConvertedAsync(ConvertState state)
         {
-            var result = await _converter.QueryAsync(state.conversionJobId);
+            var result = await _converter.QueryAsync(state.ConversionJobId);
             
             if (result.Success)
             {
-                string filename = Path.Combine(state.settlement.CompanyId.ToString(), 
+                string filename = Path.Combine(state.Settlement.CompanyId.ToString(), 
                     result.target_files[0].name);
                 
                 int fileId = result.target_files[0].id;
                 
                 if (await _converter.DownloadAsync(fileId, filename))
                 {
-                    System.Console.WriteLine($"Downloaded: {filename}");
-                    await SaveAsync(filename, state.settlement);
+                    state.ConvertTimestampUtc = DateTime.Parse(result.finished_at);                    
+                    state.CloudPath = await _file.SaveAsync(filename); 
+
+                    await SaveAsync(filename, state.Settlement);
+                    
+                    await _settlementRepository.SaveConvertStateAsync(state);
                 }
             }
             else if (!result.Failed)
@@ -89,23 +94,14 @@ namespace Trucks
 
             await _converter.DeleteAsync(result.target_files[0].id);
         }
-        
-        private PantherClient CreatePantherClient(string companyId)
-        {
-            var config = _config.GetSection(PantherSettings.Section)
-                .Get<PantherSettings>();
 
-            var company = config.Companies.FirstOrDefault(
-                c => c.CompanyId == companyId);
-            
-            return new PantherClient(company.User, company.Password);
-        }
-
-        private async Task SaveAsync(string filename, SettlementHistory settlement)
+        public async Task SaveAsync(string filename, SettlementHistory settlement)
         {
             SettlementHistory parsedSettlement = SettlementHistoryParser.Parse(filename);
             if (parsedSettlement != null)
             {
+                await _file.SaveAsync(filename);
+
                 settlement.Credits = parsedSettlement.Credits;
                 settlement.Deductions = parsedSettlement.Deductions;
 
@@ -118,5 +114,43 @@ namespace Trucks
                 Console.WriteLine($"Unable to parse {filename}.");
             }
         }
+
+        private PantherClient CreatePantherClient(string companyId)
+        {
+            var config = _config.GetSection(PantherSettings.Section)
+                .Get<PantherSettings>();
+
+            var company = config.Companies.FirstOrDefault(
+                c => c.CompanyId == companyId);
+            
+            return new PantherClient(company.User, company.Password);
+        }       
+
+        internal class Watermark
+        {
+            public DateTime low;
+            public DateTime high;
+
+            public Func<SettlementHistory, bool> Filter()
+            {
+                return (s => s.SettlementDate >= this.high ||
+                    s.SettlementDate <= this.low);
+            }
+        }
+
+        private async Task<Watermark> GetWatermarkAsync(string companyId)
+        {
+            // Not part of the interface right now, so cast temporarily until we 
+            // decide this is the right way to do this or not.
+            FirestoreRepository firestore = (FirestoreRepository)_settlementRepository;
+            
+            var high = await firestore.GetLatestSettlementDate(companyId);
+
+            var low = await firestore.GetOldestSettlementDate(companyId);
+
+            Console.WriteLine($"High: {high}, Low: {low}");
+            return new Watermark() {low = low, high = high};
+        }
+
     }
 }
