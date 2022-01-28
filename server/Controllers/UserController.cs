@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Google.Apis.Auth;
-using EventsSample.Authentication;
+using Trucks;
+using Trucks.Server.Authentication;
 
 namespace Trucks.Server
 {
@@ -16,12 +17,12 @@ namespace Trucks.Server
         }
 
         private readonly JwtGenerator _jwtGenerator;
-        private readonly IRepository _repository;
+        private readonly ISettlementRepository _repository;
         private readonly ILogger<UserController> _log;
         private readonly AuthenticationSettings _config;
 
         public UserController(ILogger<UserController> log, 
-                IConfiguration config, IRepository repository)
+                IConfiguration config, ISettlementRepository repository)
         {
             _config = config.GetSection(AuthenticationSettings.Section)
                 .Get<AuthenticationSettings>();
