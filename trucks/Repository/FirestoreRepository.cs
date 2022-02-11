@@ -64,10 +64,13 @@ namespace Trucks
             
             QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
             var snapshot = querySnapshot.FirstOrDefault();
-            
-            var settlement = snapshot.ConvertTo<SettlementHistory>();
 
-            return settlement.SettlementDate;
+            var settlement = snapshot?.ConvertTo<SettlementHistory>();
+
+            if (settlement != null)
+                return settlement.SettlementDate;
+            else 
+                return DateTime.MinValue;
         }
 
         public async Task<DateTime> GetOldestSettlementDate(string companyId)
@@ -83,9 +86,12 @@ namespace Trucks
             QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
             var snapshot = querySnapshot.FirstOrDefault();
             
-            var settlement = snapshot.ConvertTo<SettlementHistory>();
+            var settlement = snapshot?.ConvertTo<SettlementHistory>();
 
-            return settlement.SettlementDate;
+            if (settlement != null)
+                return settlement.SettlementDate;
+            else 
+                return DateTime.MinValue;
         }
 
 
