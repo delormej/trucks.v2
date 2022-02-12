@@ -9,7 +9,7 @@ namespace Trucks
     public class SettlementManager : ISettlementManager
     {
         readonly IConfiguration _config;
-        ThreadedConversionQueue _conversionQueue;
+        ConversionJobQueue _conversionQueue;
         ExcelConverter _converter;
         ISettlementRepository _settlementRepository;
         IFileRepository _file;
@@ -24,7 +24,7 @@ namespace Trucks
             _settlementRepository = repository;
             _file = file;
 
-            _conversionQueue = new ThreadedConversionQueue(SaveConvertedAsync);
+            _conversionQueue = new ConversionJobQueue(TryConversionJobAsync);
             _conversionQueue.OnFinished += onFinished;
         }
 
@@ -67,26 +67,13 @@ namespace Trucks
         /// persists to repository.  If conversion is not complete yet, adds back
         /// to the queue.
         /// </summary>
-        public async Task SaveConvertedAsync(ConvertState state)
+        public async Task TryConversionJobAsync(ConvertState state)
         {
             var result = await _converter.QueryAsync(state.ConversionJobId);
             
             if (result.Success)
             {
-                string filename = Path.Combine(state.Settlement.CompanyId.ToString(), 
-                    result.target_files[0].name);
-                
-                int fileId = result.target_files[0].id;
-                
-                if (await _converter.DownloadAsync(fileId, filename))
-                {
-                    state.ConvertTimestampUtc = DateTime.Parse(result.finished_at);                    
-                    state.CloudPath = await _file.SaveAsync(filename); 
-
-                    await SaveAsync(filename, state.Settlement);
-                    
-                    await _settlementRepository.SaveConvertStateAsync(state);
-                }
+                await ProcessConversionJobAsync(state, result);
             }
             else if (!result.Failed)
             {
@@ -97,7 +84,25 @@ namespace Trucks
             await _converter.DeleteAsync(result.target_files[0].id);
         }
 
-        public async Task SaveAsync(string filename, SettlementHistory settlement)
+        private async Task ProcessConversionJobAsync(ConvertState state, ZamzarResult result)
+        {
+            string filename = Path.Combine(state.Settlement.CompanyId.ToString(), 
+                result.target_files[0].name);
+            
+            int fileId = result.target_files[0].id;
+            
+            if (await _converter.DownloadAsync(fileId, filename))
+            {
+                state.ConvertTimestampUtc = DateTime.Parse(result.finished_at);                    
+                state.CloudPath = await _file.SaveAsync(filename); 
+
+                await SaveSettlementAsync(filename, state.Settlement);
+                
+                await _settlementRepository.SaveConvertStateAsync(state);
+            }            
+        }
+
+        public async Task SaveSettlementAsync(string filename, SettlementHistory settlement)
         {
             SettlementHistory parsedSettlement = SettlementHistoryParser.Parse(filename);
             if (parsedSettlement != null)

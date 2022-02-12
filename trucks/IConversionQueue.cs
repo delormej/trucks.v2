@@ -1,6 +1,6 @@
 namespace Trucks
 {
-    public interface IConversionQueue
+    public interface IConversionJobQueue
     {
         void Add(ConvertState state);
     }

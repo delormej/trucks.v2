@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 namespace Trucks
 {
-    public class ThreadedConversionQueue : IConversionQueue    
+    public class ConversionJobQueue : IConversionJobQueue    
     {
         const int DelayMins = 1;
         Queue<ConvertState> _queue;
         Timer _timer;
         int _activeCount = 0;
-        Func<ConvertState, Task> _onConverted;
+        Func<ConvertState, Task> _onCheckJob;
 
-        public ThreadedConversionQueue(Func<ConvertState, Task> onConverted)
+        public ConversionJobQueue(Func<ConvertState, Task> onCheckJob)
         {
             _queue = new Queue<ConvertState>();
-            _onConverted = onConverted;
+            _onCheckJob = onCheckJob;
         }
 
         public event EventHandler OnFinished;
@@ -56,7 +56,7 @@ namespace Trucks
                     return;
                 }
 
-                var task = _onConverted(convertState);
+                var task = _onCheckJob(convertState);
                 task.Wait();
             }
             catch (Exception e)
