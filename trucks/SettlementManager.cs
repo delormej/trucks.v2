@@ -29,8 +29,10 @@ namespace Trucks
         }
 
         /// <summary>
-        /// Batch operation to download xls settlements from panther, upload to
-        /// service for async conversion to xlsx.
+        /// Batch operation to:
+        ///     1. Download xls settlements from panther
+        ///     2. Upload to service for async conversion to xlsx.
+        ///     3. Persist raw xls for future processing / errors. 
         /// </summary>
         public async Task ConvertAsync(string companyId)
         {
