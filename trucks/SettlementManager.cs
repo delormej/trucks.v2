@@ -131,7 +131,27 @@ namespace Trucks
                 c => c.CompanyId == companyId);
             
             return new PantherClient(company.User, company.Password);
-        }       
+        }
+
+        // public async Task CreateWorkbooks() 
+        // {
+        //     SettlementWorkbookGenerator generator = new SettlementWorkbookGenerator(settlements, fuelRepository);
+        //     foreach (string driver in GetDrivers(settlements, truckid))
+        //     {
+        //         string file = generator.Generate(year, weeks, driver);
+        //         files.Add(file);
+        //     }
+
+        // } 
+
+        private IEnumerable<string> GetDrivers(List<SettlementHistory> settlements, int? truckid)
+        {
+            IEnumerable<string> drivers = settlements.SelectMany(s => 
+                    s.Credits.Where(c => truckid != null ? c.TruckId == truckid : true)
+                    .Select(c => c.Driver)).Distinct();                
+            
+            return drivers;
+        }        
 
         internal class Watermark
         {
