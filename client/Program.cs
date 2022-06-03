@@ -22,7 +22,13 @@ var manager = new SettlementManager(repository, file, Reset,
     GetConfiguration(), 
     CreateLogger<SettlementManager>());
 
-await manager.ConvertAsync("170087");
+var driverSettlements = manager.GetDriverSettlements();
+foreach (var d in driverSettlements)
+{
+    Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
+}
+
+//await manager.ConvertAsync("170087");
 ewh.WaitOne();
 
 // await manager.SaveAsync("170087/CD658726.xlsx", 

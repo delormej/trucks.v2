@@ -9,6 +9,19 @@ namespace Trucks
             _fuelRepository = fuel;
         }
 
+        public IEnumerable<DriverSettlement> Create(SettlementHistory settlement)
+        {
+            var driverSettlements = new List<DriverSettlement>();
+
+            var drivers = settlement.Credits.GroupBy(c => c.Driver)
+                .Select(driver => driver.Key);
+
+            foreach (var driver in drivers)
+                driverSettlements.Add(Create(settlement, driver));
+
+            return driverSettlements;
+        }
+
         public DriverSettlement Create(SettlementHistory settlement, string driver)
         {
             int[] trucks = GetTrucksForDriver(settlement, driver);
