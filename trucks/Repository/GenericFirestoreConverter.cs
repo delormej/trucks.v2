@@ -1,5 +1,6 @@
 using System.Reflection;
 using Google.Cloud.Firestore;
+using System.Collections;
 
 namespace Trucks
 {
@@ -113,13 +114,35 @@ namespace Trucks
                     Timestamp obj = (Timestamp)value;
                     property.SetValue(item, obj.ToDateTime());
                 }
+                else if (property.PropertyType == typeof(Int32))
+                {
+                    property.SetValue(item, (Int32)(Int64)value);
+                }
+                else if (value is IEnumerable<object> && property.PropertyType.IsGenericType)
+                {
+                    /* Ignore nested collections, an ERROR like this will occur:
+                    
+                        Object of type 'System.Collections.Generic.List`1[System.Object]' cannot be converted to type 
+                        'System.Collections.Generic.List`1[*foo*]'
+                    */
+                }                
                 else
                 {
                     property.SetValue(item, value);
                 }
             }
-            catch
-            {} // Ignore failures.
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in TrySetValue {property.Name}: {e.Message}");
+            }
         }
+        // private object DeserializeArray(object values, Type propertyType)
+        // {
+        //     var list = (IList) Activator.CreateInstance(propertyType);
+        //     foreach (var value in values)
+        //     {
+        //         var deserialized = ValueDeserializer.Deserialize()
+        //     }
+        // }
     }
 }

@@ -84,9 +84,9 @@ namespace Trucks
             await _converter.DeleteAsync(result.target_files[0].id);
         }
 
-        public IEnumerable<DriverSettlement> GetDriverSettlements()
+        public async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync()
         {
-            var settlements = _settlementRepository.GetSettlements();
+            var settlements = await _settlementRepository.GetSettlementsAsync();
             var settlement = settlements.First();
 
             var factory = new DriverSettlementFactory();

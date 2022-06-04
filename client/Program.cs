@@ -22,10 +22,17 @@ var manager = new SettlementManager(repository, file, Reset,
     GetConfiguration(), 
     CreateLogger<SettlementManager>());
 
-var driverSettlements = manager.GetDriverSettlements();
-foreach (var d in driverSettlements)
+try
 {
-    Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
+    var driverSettlements = await manager.GetDriverSettlementsAsync();
+    foreach (var d in driverSettlements)
+    {
+        Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
+    }
+}
+catch (Exception e)
+{
+    Console.WriteLine(e);
 }
 
 //await manager.ConvertAsync("170087");

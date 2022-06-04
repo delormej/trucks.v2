@@ -95,8 +95,38 @@ namespace Trucks
         }
 
 
-        public List<SettlementHistory> GetSettlements(int year, int[] weeks) {throw new NotImplementedException(); }
-        public List<SettlementHistory> GetSettlements() {throw new NotImplementedException(); }
+        public IEnumerable<SettlementHistory> GetSettlements(int year, int[] weeks) {throw new NotImplementedException(); }
+        
+        public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync() 
+        {
+            var settlements = new List<SettlementHistory>();
+
+            #warning Hard Coding to 170087 Company
+            string partitionKey = "170087";
+
+            var parition = _firestore.Collection(_settlementsCollection)
+                .Document(partitionKey);
+
+            var query = parition.Collection(_settlementsCollection);
+            var querySnapshot = await query.GetSnapshotAsync();
+            
+            foreach (var snapshot in querySnapshot.Documents)
+            {
+                var settlement = snapshot.ConvertTo<SettlementHistory>();
+                
+                IEnumerable<Credit> credits;
+                snapshot.TryGetValue<IEnumerable<Credit>>("Credits", out credits);
+                settlement.Credits = credits.ToList();
+
+                IEnumerable<Deduction> deductions;
+                snapshot.TryGetValue<IEnumerable<Deduction>>("Deductions", out deductions);
+                settlement.Deductions = deductions.ToList();
+
+                settlements.Add(settlement);
+            }
+
+            return settlements;
+        }
 
         public async Task<User> GetUserAsync(string id)
         {

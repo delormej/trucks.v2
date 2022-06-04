@@ -3,8 +3,8 @@ namespace Trucks
     public interface ISettlementRepository
     {
         Task SaveSettlementAsync(SettlementHistory entity);
-        List<SettlementHistory> GetSettlements(int year, int[] weeks);
-        List<SettlementHistory> GetSettlements();
+        IEnumerable<SettlementHistory> GetSettlements(int year, int[] weeks);
+        Task<IEnumerable<SettlementHistory>> GetSettlementsAsync();
         
         Task SaveConvertStateAsync(ConvertState state);
         

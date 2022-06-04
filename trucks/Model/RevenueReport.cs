@@ -35,7 +35,10 @@ namespace Trucks
 
         public void GetTruckRevenueGroupBySettlement()
         {
-            List<SettlementHistory> settlements = _repository.GetSettlements();
+            var getSettlementsTask = _repository.GetSettlementsAsync();
+            getSettlementsTask.Wait();
+
+            IEnumerable<SettlementHistory> settlements = getSettlementsTask.Result;
             IEnumerable<SettlementHistory> orderedSettlements = settlements
                 .OrderByDescending(s => s.WeekNumber)
                 .OrderByDescending(s => s.Year);
