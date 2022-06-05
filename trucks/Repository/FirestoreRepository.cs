@@ -24,8 +24,6 @@ namespace Trucks
                 ConverterRegistry = new ConverterRegistry
                 {
                     new GenericFirestoreConverter<SettlementHistory>("SettlementId"),
-                    new GenericFirestoreConverter<List<Credit>>(),
-                    new GenericFirestoreConverter<List<Deduction>>(),
                     new GenericFirestoreConverter<User>("Email"),
                     new GenericFirestoreConverter<ConvertState>("ConversionJobId")
                 }
@@ -93,7 +91,6 @@ namespace Trucks
             else 
                 return DateTime.MinValue;
         }
-
 
         public IEnumerable<SettlementHistory> GetSettlements(int year, int[] weeks) {throw new NotImplementedException(); }
         

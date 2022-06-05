@@ -105,6 +105,10 @@ namespace Trucks
             }
         }
 
+        /// <summary>
+        /// Handles special cases for deserialization which aren't handled well by the default
+        /// serialization. 
+        /// </summary>
         private void TrySetValue(T item, PropertyInfo property, object value)
         {
             try
@@ -116,10 +120,13 @@ namespace Trucks
                 }
                 else if (property.PropertyType == typeof(Int32))
                 {
+                    // Firestore always deserlizes int as Int64.
                     property.SetValue(item, (Int32)(Int64)value);
                 }
                else if (value is IEnumerable<object> && property.PropertyType.IsGenericType)
                {
+                   // Generic Lists of child objects are not handled implicitly since we 
+                   // are using a custom converter, so recursively create converters.
                    IList list = CreateGenericList(property, value);
                    property.SetValue(item, list);
                }                
@@ -134,6 +141,10 @@ namespace Trucks
             }
         }
 
+        /// <summary>
+        /// Supports recursive instantiation of this GenericFirestoreConverter for child items
+        /// which are generically returned from Firestore in an enumerable list.
+        /// </summary>
         private IList CreateGenericList(PropertyInfo property, object value)
         {
             var values = (IEnumerable<object>)value;
