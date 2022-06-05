@@ -24,8 +24,8 @@ namespace Trucks
                 ConverterRegistry = new ConverterRegistry
                 {
                     new GenericFirestoreConverter<SettlementHistory>("SettlementId"),
-                    new GenericFirestoreConverter<Credit>(),
-                    new GenericFirestoreConverter<Deduction>(),
+                    new GenericFirestoreConverter<List<Credit>>(),
+                    new GenericFirestoreConverter<List<Deduction>>(),
                     new GenericFirestoreConverter<User>("Email"),
                     new GenericFirestoreConverter<ConvertState>("ConversionJobId")
                 }
@@ -113,15 +113,6 @@ namespace Trucks
             foreach (var snapshot in querySnapshot.Documents)
             {
                 var settlement = snapshot.ConvertTo<SettlementHistory>();
-                
-                IEnumerable<Credit> credits;
-                snapshot.TryGetValue<IEnumerable<Credit>>("Credits", out credits);
-                settlement.Credits = credits.ToList();
-
-                IEnumerable<Deduction> deductions;
-                snapshot.TryGetValue<IEnumerable<Deduction>>("Deductions", out deductions);
-                settlement.Deductions = deductions.ToList();
-
                 settlements.Add(settlement);
             }
 

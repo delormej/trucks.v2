@@ -118,14 +118,11 @@ namespace Trucks
                 {
                     property.SetValue(item, (Int32)(Int64)value);
                 }
-                else if (value is IEnumerable<object> && property.PropertyType.IsGenericType)
-                {
-                    /* Ignore nested collections, an ERROR like this will occur:
-                    
-                        Object of type 'System.Collections.Generic.List`1[System.Object]' cannot be converted to type 
-                        'System.Collections.Generic.List`1[*foo*]'
-                    */
-                }                
+               else if (value is IEnumerable<object> && property.PropertyType.IsGenericType)
+               {
+                   IList list = CreateGenericList(property, value);
+                   property.SetValue(item, list);
+               }                
                 else
                 {
                     property.SetValue(item, value);
@@ -136,13 +133,29 @@ namespace Trucks
                 Console.WriteLine($"Error in TrySetValue {property.Name}: {e.Message}");
             }
         }
-        // private object DeserializeArray(object values, Type propertyType)
-        // {
-        //     var list = (IList) Activator.CreateInstance(propertyType);
-        //     foreach (var value in values)
-        //     {
-        //         var deserialized = ValueDeserializer.Deserialize()
-        //     }
-        // }
+
+        private IList CreateGenericList(PropertyInfo property, object value)
+        {
+            var values = (IEnumerable<object>)value;
+
+            try 
+            {
+                var converter = FirestoreListDeserializer.GetConverter(property);
+                var list = converter.CreateList();
+
+                foreach (var item in values) 
+                {
+                    var result = converter.Convert(item);
+                    list.Add(result);
+                }
+
+                return list;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error serializaing {property.Name}: {e.Message}");
+                return null;
+            }          
+        }
     }
 }
