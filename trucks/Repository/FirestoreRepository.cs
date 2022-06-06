@@ -27,16 +27,29 @@ namespace Trucks
                     new GenericFirestoreConverter<User>("Email"),
                     new GenericFirestoreConverter<Credit>(),
                     new GenericFirestoreConverter<Deduction>(),
-                    new GenericFirestoreConverter<ConvertState>("ConversionJobId")
+                    new GenericFirestoreConverter<ConvertState>("ConversionJobId"),
+                    new GenericFirestoreConverter<Company>()
                 }
             }.Build();            
+        }
+
+        /// <summary>
+        /// Creates a top level company object that Settlements will live under.
+        /// If this entity is not created, the top level collection will not be 
+        /// queryable.  https://stackoverflow.com/questions/48498342/firestore-query-documents-with-only-collections-inside
+        /// </summary>
+        public async Task CreateCompanyAsync(Company company)
+        {
+            await _firestore.Collection(_settlementsCollection)
+                .Document(company.CompanyId)
+                .SetAsync(company);
         }
 
         public async Task SaveSettlementAsync(SettlementHistory settlement) 
         {
             string partitionKey = settlement.CompanyId.ToString();
 
-            var parition = _firestore.Collection(_settlementsCollection)
+            var parition =  _firestore.Collection(_settlementsCollection)
                 .Document(partitionKey);
             
             await parition.Collection(_settlementsCollection)
@@ -100,19 +113,24 @@ namespace Trucks
         {
             var settlements = new List<SettlementHistory>();
 
-            #warning Hard Coding to 170087 Company
-            string partitionKey = "170087";
-
-            var parition = _firestore.Collection(_settlementsCollection)
-                .Document(partitionKey);
-
-            var query = parition.Collection(_settlementsCollection);
-            var querySnapshot = await query.GetSnapshotAsync();
+            var companiesRef = _firestore.Collection(_settlementsCollection);
+            var companiesSnapshot = await companiesRef.GetSnapshotAsync();
             
-            foreach (var snapshot in querySnapshot.Documents)
+            foreach (var company in companiesSnapshot.Documents)
             {
-                var settlement = snapshot.ConvertTo<SettlementHistory>();
-                settlements.Add(settlement);
+                string partitionKey = company.Id;
+
+                var parition = _firestore.Collection(_settlementsCollection)
+                    .Document(partitionKey);
+
+                var query = parition.Collection(_settlementsCollection);
+                var querySnapshot = await query.GetSnapshotAsync();
+                
+                foreach (var snapshot in querySnapshot.Documents)
+                {
+                    var settlement = snapshot.ConvertTo<SettlementHistory>();
+                    settlements.Add(settlement);
+                }
             }
 
             return settlements;

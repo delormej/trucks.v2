@@ -22,5 +22,8 @@ namespace Trucks
         {throw new NotImplementedException();}
         public Task CreateUserAsync(User user)
         {throw new NotImplementedException();}
+
+        public Task CreateCompanyAsync(Company company)
+        {throw new NotImplementedException();}
     }
 }

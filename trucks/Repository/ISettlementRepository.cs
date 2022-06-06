@@ -10,5 +10,6 @@ namespace Trucks
         
         Task<User> GetUserAsync(string email);
         Task CreateUserAsync(User user);
+        Task CreateCompanyAsync(Company company);
     }
 }
