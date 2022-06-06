@@ -25,6 +25,8 @@ namespace Trucks
                 {
                     new GenericFirestoreConverter<SettlementHistory>("SettlementId"),
                     new GenericFirestoreConverter<User>("Email"),
+                    new GenericFirestoreConverter<Credit>(),
+                    new GenericFirestoreConverter<Deduction>(),
                     new GenericFirestoreConverter<ConvertState>("ConversionJobId")
                 }
             }.Build();            
