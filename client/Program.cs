@@ -29,6 +29,9 @@ try
     {
         Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
     }
+
+    var json = System.Text.Json.JsonSerializer.Serialize<IEnumerable<DriverSettlement>>(driverSettlements); 
+    File.WriteAllText("./driversettlements.json", json);
 }
 catch (Exception e)
 {

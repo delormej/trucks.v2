@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Google.Apis.Auth;
-using Trucks;
-using Trucks.Server.Authentication;
+using GcpHelpers.Authentication;
+using System.Security.Claims;
 
 namespace Trucks.Server
 {
@@ -68,8 +68,10 @@ namespace Trucks.Server
                 return Unauthorized();
             }
 
+
+
             return Ok(new { 
-                AuthToken = _jwtGenerator.CreateUserAuthToken(user),
+                AuthToken = GetUserAuthToken(user),
                 Name = payload.Name,
                 Picture = payload.Picture,
                 IsAdmin = user.IsAdmin 
@@ -93,5 +95,21 @@ namespace Trucks.Server
                 return StatusCode(StatusCodes.Status500InternalServerError, error);
             }
         }
+
+        private string GetUserAuthToken(User user)
+        {
+            var claims = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.Sid, user.Email)
+            });
+
+            if (user.IsAdmin)
+            {
+                claims.AddClaim(new Claim(ClaimTypes.Role, 
+                    AuthenticationSettings.AdminRole));
+            }
+            
+            return _jwtGenerator.CreateUserAuthToken(claims);
+        }        
     }
 }

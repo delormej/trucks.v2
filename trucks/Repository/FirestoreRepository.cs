@@ -1,6 +1,7 @@
 using Google.Cloud.Firestore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using GcpHelpers.Firestore;
 
 namespace Trucks
 {

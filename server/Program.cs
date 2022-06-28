@@ -1,6 +1,7 @@
 using Trucks;
 using Trucks.Server;
-using Trucks.Server.Authentication;
+using GcpHelpers.Authentication;
+using GcpHelpers.Metadata;
 using Google.Cloud.Logging.Console;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsProduction()) 
 {
     await GoogleMetadata.SetConfigAsync(builder.Configuration);
-    builder.Logging.AddGoogleFormatLogger();
+    builder.Logging.AddGoogleCloudConsole();
 }
 
 // Services
