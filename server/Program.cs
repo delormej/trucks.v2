@@ -6,37 +6,37 @@ using Google.Cloud.Logging.Console;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsProduction()) 
-{
-    await GoogleMetadata.SetConfigAsync(builder.Configuration);
-    builder.Logging.AddGoogleCloudConsole();
-}
+// if (builder.Environment.IsProduction()) 
+// {
+//     await GoogleMetadata.SetConfigAsync(builder.Configuration);
+//     builder.Logging.AddGoogleCloudConsole();
+// }
 
 // Services
-builder.Services.AddSignalR();
-builder.Services.AddHostedService<SubscriberService>();
-builder.Services.AddSingleton<PublisherService>();
+// builder.Services.AddSignalR();
+// builder.Services.AddHostedService<SubscriberService>();
+// builder.Services.AddSingleton<PublisherService>();
 builder.Services.AddSingleton<ISettlementRepository, FirestoreRepository>();
 
 // Controllers
 builder.Services.AddControllers();
 
 // AuthN/AuthZ
-builder.Services.AddGoogleLoginJwt();
+// builder.Services.AddGoogleLoginJwt();
 
 var app = builder.Build();
 
 app.MapControllers();
 app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
+// app.UseAuthentication();
+// app.UseAuthorization();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 // signalR endpoint
-app.UseEndpoints(endpoints =>
-    endpoints.MapHub<NotifyHub>("/notifyhub")
-);
+// app.UseEndpoints(endpoints =>
+//     endpoints.MapHub<NotifyHub>("/notifyhub")
+// );
 
 try 
 {

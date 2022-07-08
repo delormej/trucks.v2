@@ -22,23 +22,23 @@ var manager = new SettlementManager(repository, file, Reset,
     GetConfiguration(), 
     CreateLogger<SettlementManager>());
 
-try
-{
-    var driverSettlements = await manager.GetDriverSettlementsAsync();
-    foreach (var d in driverSettlements)
-    {
-        Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
-    }
+// try
+// {
+//     var driverSettlements = await manager.GetDriverSettlementsAsync();
+//     foreach (var d in driverSettlements)
+//     {
+//         Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
+//     }
 
-    var json = System.Text.Json.JsonSerializer.Serialize<IEnumerable<DriverSettlement>>(driverSettlements); 
-    File.WriteAllText("./driversettlements.json", json);
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
-}
+//     var json = System.Text.Json.JsonSerializer.Serialize<IEnumerable<DriverSettlement>>(driverSettlements); 
+//     File.WriteAllText("./driversettlements.json", json);
+// }
+// catch (Exception e)
+// {
+//     Console.WriteLine(e);
+// }
 
-//await manager.ConvertAsync("170087");
+await manager.ConvertAsync("170087");
 ewh.WaitOne();
 
 // await manager.SaveAsync("170087/CD658726.xlsx", 
