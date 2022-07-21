@@ -15,9 +15,12 @@ namespace Trucks.Server
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(
-            int year, int week, int companyId)
+            int companyId, int? year, int? week)
         {
-            var settlements = await GetDriverSettlementsAsync(year, week, companyId);
+            year ??= DateTime.Now.Year;
+            week ??= GetLastWeek();
+
+            var settlements = await GetDriverSettlementsAsync(companyId, (int)year, (int)week);
 
             if (settlements == null)
                 return NotFound();
@@ -26,20 +29,27 @@ namespace Trucks.Server
         }       
 
         private async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync(
-            int year, int week, int companyId)
+            int companyId, int year, int week)
         {
-            var settlements = await _settlementRepository.GetSettlementsAsync();
-            var settlement = settlements
-                .Where(s => s.CompanyId == companyId && s.Year == year && s.WeekNumber == week)
-                .FirstOrDefault();
+            var factory = new DriverSettlementFactory();
+            var settlements = await _settlementRepository.GetSettlementsAsync(companyId, year, week);
 
-            if (settlement == null)
+            if (settlements == null || settlements.Count() == 0)
                 return null;
 
-            var factory = new DriverSettlementFactory();
-            var driverSettlements = factory.Create(settlement);
+            var driverSettlements = new List<DriverSettlement>();
 
+            foreach(var settlement in settlements)
+                driverSettlements.AddRange(factory.Create(settlement));
+            
             return driverSettlements;
-        }        
+        }
+
+        private int GetLastWeek()
+        {
+            int week, year;
+            Tools.GetWeekNumber(DateTime.Now.AddDays(-7), out week, out year);
+            return week;
+        }                
     }
 }

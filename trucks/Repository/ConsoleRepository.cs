@@ -12,7 +12,7 @@ namespace Trucks
         public Task SaveConvertStateAsync(ConvertState state)
         {throw new NotImplementedException();}
         
-        public IEnumerable<SettlementHistory> GetSettlements(int year, int[] weeks)
+        public Task<IEnumerable<SettlementHistory>> GetSettlementsAsync(int companyId, int year, int week) 
         {throw new NotImplementedException();}
         
         public Task<IEnumerable<SettlementHistory>> GetSettlementsAsync()

@@ -108,7 +108,28 @@ namespace Trucks
                 return DateTime.MinValue;
         }
 
-        public IEnumerable<SettlementHistory> GetSettlements(int year, int[] weeks) {throw new NotImplementedException(); }
+        public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync(int companyId, int year, int week) 
+        {
+            /* Google Search doesn't yield good results, but this shows C# example:
+                https://cloud.google.com/firestore/docs/query-data/queries
+            */
+
+            string partitionKey = companyId.ToString();
+
+            var partition = _firestore.Collection(_settlementsCollection)
+                .Document(partitionKey);
+
+            var query = partition.Collection(_settlementsCollection)
+                .WhereEqualTo("WeekNumber", week)
+                .WhereEqualTo("Year", year);
+            
+            QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
+            
+            var settlements = querySnapshot.Documents
+                .Select(d => d.ConvertTo<SettlementHistory>());
+
+            return settlements;
+        }
         
         public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync() 
         {
