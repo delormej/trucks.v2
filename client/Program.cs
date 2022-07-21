@@ -2,6 +2,10 @@
 using Microsoft.Extensions.Logging;
 using Trucks;
 
+ImportSettlements(args[0]);
+
+return;
+
 EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
 EventHandler Reset = (o, e) => {
     Console.WriteLine("Signaling stop.");
@@ -17,6 +21,9 @@ System.Console.WriteLine("Running...");
 ISettlementRepository repository = new FirestoreRepository(config, 
     CreateLogger<FirestoreRepository>());
 IFileRepository file = new CloudFileRepository();
+
+await ExportSettlements("./settlements.json");
+return;
 
 var manager = new SettlementManager(repository, file, Reset,
     GetConfiguration(), 
@@ -62,3 +69,22 @@ ewh.WaitOne();
         .AddCommandLine(args)
         .Build();
  }
+
+void ImportSettlements(string jsonPath)
+{
+    string json = File.ReadAllText(jsonPath);
+    var settlements = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<SettlementHistory>>(json);
+
+    foreach (var settlement in settlements)
+    {
+        System.Console.WriteLine(settlement.SettlementId);
+    }
+}
+
+async Task ExportSettlements(string path)
+{
+    var settlements = await repository.GetSettlementsAsync();
+
+    var json = System.Text.Json.JsonSerializer.Serialize<IEnumerable<SettlementHistory>>(settlements); 
+    File.WriteAllText(path, json);
+}
