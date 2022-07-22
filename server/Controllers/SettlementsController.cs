@@ -41,8 +41,7 @@ namespace Trucks.Server
         [HttpGet("summaries")]
         public async Task<ActionResult<IEnumerable<SettlementSummary>>> GetSummaries()
         {
-            var summaries = await
-            ((FirestoreRepository)_settlementRepository).GetSettlementSummariesAsync();
+            var summaries = await _settlementRepository.GetSettlementSummariesAsync();
 
             if (summaries == null)
                 return NotFound();

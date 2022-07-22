@@ -18,6 +18,9 @@ namespace Trucks
         public Task<IEnumerable<SettlementHistory>> GetSettlementsAsync()
         {throw new NotImplementedException();}
 
+        public Task<IEnumerable<SettlementSummary>> GetSettlementSummariesAsync()
+        {throw new NotImplementedException();}
+
         public Task<User> GetUserAsync(string email)
         {throw new NotImplementedException();}
         public Task CreateUserAsync(User user)
