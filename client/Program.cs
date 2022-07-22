@@ -2,10 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Trucks;
 
-ImportSettlements(args[0]);
-
-return;
-
 EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
 EventHandler Reset = (o, e) => {
     Console.WriteLine("Signaling stop.");
@@ -22,28 +18,9 @@ ISettlementRepository repository = new FirestoreRepository(config,
     CreateLogger<FirestoreRepository>());
 IFileRepository file = new CloudFileRepository();
 
-await ExportSettlements("./settlements.json");
-return;
-
 var manager = new SettlementManager(repository, file, Reset,
     GetConfiguration(), 
     CreateLogger<SettlementManager>());
-
-// try
-// {
-//     var driverSettlements = await manager.GetDriverSettlementsAsync();
-//     foreach (var d in driverSettlements)
-//     {
-//         Console.WriteLine($"{d.Driver}, {d.SettlementDate}, {d.Year}/{d.Week}, {d.Credits.Sum(c => c.ExtendedAmount)}, {d.Deductions.Sum(d => d.Amount)}");
-//     }
-
-//     var json = System.Text.Json.JsonSerializer.Serialize<IEnumerable<DriverSettlement>>(driverSettlements); 
-//     File.WriteAllText("./driversettlements.json", json);
-// }
-// catch (Exception e)
-// {
-//     Console.WriteLine(e);
-// }
 
 await manager.ConvertAsync("170087");
 ewh.WaitOne();

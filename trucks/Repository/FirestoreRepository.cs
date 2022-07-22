@@ -29,7 +29,8 @@ namespace Trucks
                     new GenericFirestoreConverter<Credit>(),
                     new GenericFirestoreConverter<Deduction>(),
                     new GenericFirestoreConverter<ConvertState>("ConversionJobId"),
-                    new GenericFirestoreConverter<Company>()
+                    new GenericFirestoreConverter<Company>(),
+                    new GenericFirestoreConverter<SettlementSummary>("SettlementId")
                 }
             }.Build();            
         }
@@ -131,6 +132,37 @@ namespace Trucks
             return settlements;
         }
         
+        public async Task<IEnumerable<SettlementSummary>> GetSettlementSummariesAsync()
+        {
+            var settlements = new List<SettlementSummary>();
+
+            var companiesRef = _firestore.Collection(_settlementsCollection);
+            var companiesSnapshot = await companiesRef.GetSnapshotAsync();
+            
+            foreach (var company in companiesSnapshot.Documents)
+            {
+                string partitionKey = company.Id;
+
+                var parition = _firestore.Collection(_settlementsCollection)
+                    .Document(partitionKey);
+
+                var query = parition.Collection(_settlementsCollection)
+                    .Select(SettlementSummary.Fields)
+                    .OrderByDescending("Year")
+                    .OrderByDescending("WeekNumber")
+                    .Limit(52);
+                
+                var querySnapshot = await query.GetSnapshotAsync();
+
+                var companySettlements = querySnapshot.Documents.Select(
+                    d => d.ConvertTo<SettlementSummary>());
+                
+                settlements.AddRange(companySettlements);                
+            }
+
+            return settlements;            
+        }
+
         public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync() 
         {
             var settlements = new List<SettlementHistory>();
@@ -148,7 +180,7 @@ namespace Trucks
                 var query = parition.Collection(_settlementsCollection)
                     .OrderByDescending("Year")
                     .OrderByDescending("WeekNumber")
-                    .Limit(3);
+                    .Limit(52);
                 
                 var querySnapshot = await query.GetSnapshotAsync();
 

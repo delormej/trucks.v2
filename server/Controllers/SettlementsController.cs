@@ -37,5 +37,17 @@ namespace Trucks.Server
 
             return Ok(settlements);
         }
+
+        [HttpGet("summaries")]
+        public async Task<ActionResult<IEnumerable<SettlementSummary>>> GetSummaries()
+        {
+            var summaries = await
+            ((FirestoreRepository)_settlementRepository).GetSettlementSummariesAsync();
+
+            if (summaries == null)
+                return NotFound();
+
+            return Ok(summaries);
+        }        
     }
 }
