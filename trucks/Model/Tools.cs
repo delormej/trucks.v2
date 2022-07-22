@@ -34,5 +34,12 @@ namespace Trucks
                 year = settlementDate.Year;
             }
         }
+
+        public static int GetLastWeek()
+        {
+            int week, year;
+            GetWeekNumber(DateTime.Now.AddDays(-7), out week, out year);
+            return week;
+        }                
     }
 }

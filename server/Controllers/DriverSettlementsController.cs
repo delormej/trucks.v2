@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Trucks;
+using static Trucks.Tools;
 
 namespace Trucks.Server
 {
@@ -21,7 +21,7 @@ namespace Trucks.Server
             week ??= GetLastWeek();
 
             var settlements = await GetDriverSettlementsAsync(companyId, (int)year, (int)week);
-
+        
             if (settlements == null)
                 return NotFound();
 
@@ -43,13 +43,6 @@ namespace Trucks.Server
                 driverSettlements.AddRange(factory.Create(settlement));
             
             return driverSettlements;
-        }
-
-        private int GetLastWeek()
-        {
-            int week, year;
-            Tools.GetWeekNumber(DateTime.Now.AddDays(-7), out week, out year);
-            return week;
-        }                
+        }        
     }
 }

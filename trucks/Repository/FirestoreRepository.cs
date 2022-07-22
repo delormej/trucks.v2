@@ -145,14 +145,17 @@ namespace Trucks
                 var parition = _firestore.Collection(_settlementsCollection)
                     .Document(partitionKey);
 
-                var query = parition.Collection(_settlementsCollection);
-                var querySnapshot = await query.GetSnapshotAsync();
+                var query = parition.Collection(_settlementsCollection)
+                    .OrderByDescending("Year")
+                    .OrderByDescending("WeekNumber")
+                    .Limit(3);
                 
-                foreach (var snapshot in querySnapshot.Documents)
-                {
-                    var settlement = snapshot.ConvertTo<SettlementHistory>();
-                    settlements.Add(settlement);
-                }
+                var querySnapshot = await query.GetSnapshotAsync();
+
+                var companySettlements = querySnapshot.Documents.Select(
+                    d => d.ConvertTo<SettlementHistory>());
+                
+                settlements.AddRange(companySettlements);                
             }
 
             return settlements;
