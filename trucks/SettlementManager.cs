@@ -84,17 +84,6 @@ namespace Trucks
             await _converter.DeleteAsync(result.target_files[0].id);
         }
 
-        public async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync()
-        {
-            var settlements = await _settlementRepository.GetSettlementsAsync();
-            var settlement = settlements.First();
-
-            var factory = new DriverSettlementFactory();
-            var driverSettlements = factory.Create(settlement);
-
-            return driverSettlements;
-        }
-
         private async Task ProcessConversionJobAsync(ConvertState state, ZamzarResult result)
         {
             string filename = Path.Combine(state.Settlement.CompanyId.ToString(), 

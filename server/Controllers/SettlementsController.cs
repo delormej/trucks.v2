@@ -15,7 +15,7 @@ namespace Trucks.Server
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SettlementHistory>>> Get(
-            int? companyId, int? year, int? week)
+            string companyId, int? year, int? week)
         {
             IEnumerable<SettlementHistory> settlements = null;
 
@@ -28,8 +28,8 @@ namespace Trucks.Server
                 year ??= DateTime.Now.Year;
                 week ??= GetLastWeek();
 
-                settlements = await _settlementRepository.GetSettlementsAsync(
-                    (int)companyId, (int)year,  (int)week);
+                settlements = await _settlementRepository.GetSettlementsAsync(companyId, 
+                    (int)year, (int)week);
             }
 
             if (settlements == null)
@@ -37,6 +37,20 @@ namespace Trucks.Server
 
             return Ok(settlements);
         }
+
+        [HttpGet("{companyId}/{settlementId}")]
+        public async Task<ActionResult<SettlementHistory>> GetById(
+            string companyId, string settlementId)
+        {
+            var settlement = await _settlementRepository.GetSettlementAsync(
+                companyId, settlementId);
+
+            if (settlement == null)
+                return NotFound();
+
+            return Ok(settlement);
+        }
+
 
         [HttpGet("summaries")]
         public async Task<ActionResult<IEnumerable<SettlementSummary>>> GetSummaries()
@@ -47,6 +61,6 @@ namespace Trucks.Server
                 return NotFound();
 
             return Ok(summaries);
-        }        
+        }
     }
 }

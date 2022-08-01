@@ -109,16 +109,13 @@ namespace Trucks
                 return DateTime.MinValue;
         }
 
-        public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync(int companyId, int year, int week) 
+        public async Task<IEnumerable<SettlementHistory>> GetSettlementsAsync(string companyId, int year, int week) 
         {
             /* Google Search doesn't yield good results, but this shows C# example:
                 https://cloud.google.com/firestore/docs/query-data/queries
             */
-
-            string partitionKey = companyId.ToString();
-
             var partition = _firestore.Collection(_settlementsCollection)
-                .Document(partitionKey);
+                .Document(companyId);
 
             var query = partition.Collection(_settlementsCollection)
                 .WhereEqualTo("WeekNumber", week)
@@ -191,6 +188,22 @@ namespace Trucks
             }
 
             return settlements;
+        }
+
+        public async Task<SettlementHistory> GetSettlementAsync(string companyId, string settlementId)
+        {
+            var parition = _firestore.Collection(_settlementsCollection)
+                .Document(companyId);
+
+            var query = parition.Collection(_settlementsCollection)
+                .WhereEqualTo("SettlementId", settlementId);
+
+            var querySnapshot = await query.GetSnapshotAsync();
+
+            var doc = querySnapshot.Documents.Select(
+                d => d.ConvertTo<SettlementHistory>()).FirstOrDefault();
+
+            return doc;
         }
 
         public async Task<User> GetUserAsync(string id)

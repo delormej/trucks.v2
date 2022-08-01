@@ -15,7 +15,7 @@ namespace Trucks.Server
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(
-            int companyId, int? year, int? week)
+            string companyId, int? year, int? week)
         {
             year ??= DateTime.Now.Year;
             week ??= GetLastWeek();
@@ -28,8 +28,13 @@ namespace Trucks.Server
             return Ok(settlements);
         }       
 
+        public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(string settlementId)
+        {
+            return null;
+        }
+
         private async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync(
-            int companyId, int year, int week)
+            string companyId, int year, int week)
         {
             var factory = new DriverSettlementFactory();
             var settlements = await _settlementRepository.GetSettlementsAsync(companyId, year, week);
@@ -45,4 +50,4 @@ namespace Trucks.Server
             return driverSettlements;
         }        
     }
-}
+}        
