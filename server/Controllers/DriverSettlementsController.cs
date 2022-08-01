@@ -28,9 +28,24 @@ namespace Trucks.Server
             return Ok(settlements);
         }       
 
-        public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(string settlementId)
+        [HttpGet("{companyId}/{settlementId}")]
+        public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(
+            string companyId, string settlementId)
         {
-            return null;
+            IEnumerable<DriverSettlement> driverSettlements = null;
+
+            var settlement = await _settlementRepository.GetSettlementAsync(companyId, settlementId);
+
+            if (settlement != null)
+            {
+                var factory = new DriverSettlementFactory();
+                driverSettlements = factory.Create(settlement);
+            }
+        
+            if (driverSettlements == null)
+                return NotFound();
+
+            return Ok(driverSettlements);
         }
 
         private async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync(
