@@ -20,11 +20,10 @@ namespace Trucks.Excel
             return settlement;
         }
 
-        public static List<SettlementHistory> ParseLocalFiles(string company)
+        public static List<SettlementHistory> ParseLocalFiles(string companyId)
         {
-            int companyId = int.Parse(company);
             List<SettlementHistory> settlements = new List<SettlementHistory>();
-            string[] settlementFiles = Directory.GetFiles(company, "*.xlsx");           
+            string[] settlementFiles = Directory.GetFiles(companyId, "*.xlsx");           
 
             foreach (var filename in settlementFiles)
             {

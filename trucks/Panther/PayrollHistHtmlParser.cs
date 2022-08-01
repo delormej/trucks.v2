@@ -6,10 +6,10 @@ namespace Trucks.Panther
 {
     public class PayrollHistHtmlParser
     {
-        private int companyId;
-        public PayrollHistHtmlParser(string company)
+        private string companyId;
+        public PayrollHistHtmlParser(string companyId)
         {
-            this.companyId = int.Parse(company);
+            this.companyId = companyId;
         }
 
         public List<SettlementHistory> Parse(string html)

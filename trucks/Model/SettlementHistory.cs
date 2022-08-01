@@ -27,7 +27,7 @@ namespace Trucks
         }
         public int WeekNumber { get; private set; }
         public int Year { get; private set; }
-        public int CompanyId { get; set; } 
+        public string CompanyId { get; set; } 
         public double CheckAmount { get; set; }
         public double ARAmount { get; set; }
         public double DeductionAmount { get; set; }
