@@ -24,8 +24,15 @@ builder.Services.AddControllers();
 // AuthN/AuthZ
 // builder.Services.AddGoogleLoginJwt();
 
+builder.Services.AddCors(o => o.AddDefaultPolicy(builder => {
+    builder.AllowAnyMethod();
+    builder.AllowAnyHeader();
+    builder.AllowAnyOrigin();
+}));
+
 var app = builder.Build();
 
+app.UseCors();
 app.MapControllers();
 app.UseRouting();
 // app.UseAuthentication();

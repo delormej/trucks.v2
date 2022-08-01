@@ -41,7 +41,7 @@ namespace Trucks
             PantherClient panther = CreatePantherClient(companyId);
 
             await foreach(var download in panther.DownloadSettlementsAsync(
-                watermark.Filter(), 4))
+                watermark.Filter(), 14))
             {
                 string filename = download.Key;
                 var result = await _converter.UploadAsync(filename);
@@ -171,8 +171,8 @@ namespace Trucks
 
             public Func<SettlementHistory, bool> Filter()
             {
-                return (s => s.SettlementDate >= this.high ||
-                    s.SettlementDate <= this.low);
+                return (s => s.SettlementDate > this.high && 
+                    s.SettlementDate < this.low);
             }
         }
 
@@ -182,9 +182,9 @@ namespace Trucks
             // decide this is the right way to do this or not.
             FirestoreRepository firestore = (FirestoreRepository)_settlementRepository;
             
-            var high = await firestore.GetLatestSettlementDate(companyId);
+            var high = DateTime.Parse("2021-11-26T00:00:00Z"); //await firestore.GetLatestSettlementDate(companyId);
 
-            var low = await firestore.GetOldestSettlementDate(companyId);
+            var low = DateTime.Parse("2022-03-04T00:00:00Z"); //await firestore.GetOldestSettlementDate(companyId);
 
             Console.WriteLine($"High: {high}, Low: {low}");
             return new Watermark() {low = low, high = high};
