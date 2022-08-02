@@ -36,6 +36,8 @@ namespace Trucks.Excel
         {
             const string url = endpoint + "/v1/jobs";
 
+            ZamzarResult zResult = null;
+
             using (HttpClientHandler handler = new HttpClientHandler { Credentials = new NetworkCredential(key, "") })
             using (HttpClient client = new HttpClient(handler))
             {
@@ -46,10 +48,14 @@ namespace Trucks.Excel
                 using (HttpContent content = response.Content)
                 {
                     string data = await content.ReadAsStringAsync();
-                    ZamzarResult zResult = JsonSerializer.Deserialize<ZamzarResult>(data);
-                    return zResult;
+                    zResult = JsonSerializer.Deserialize<ZamzarResult>(data);
                 }
             }
+
+            if (zResult == null || zResult.id == 0)
+                throw new ApplicationException($"Upload to Zamzar failed for {sourceFile}");
+
+            return zResult;
         }
 
         public async Task<ZamzarResult> QueryAsync(int jobId)
