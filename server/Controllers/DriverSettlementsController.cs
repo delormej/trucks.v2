@@ -32,20 +32,27 @@ namespace Trucks.Server
         public async Task<ActionResult<IEnumerable<DriverSettlement>>> Get(
             string companyId, string settlementId)
         {
-            IEnumerable<DriverSettlement> driverSettlements = null;
-
-            var settlement = await _settlementRepository.GetSettlementAsync(companyId, settlementId);
-
-            if (settlement != null)
-            {
-                var factory = new DriverSettlementFactory();
-                driverSettlements = factory.Create(settlement);
-            }
+            var driverSettlements = await GetDriverSettlementsAsync(companyId, settlementId);
         
             if (driverSettlements == null)
                 return NotFound();
 
             return Ok(driverSettlements);
+        }
+
+        [HttpGet("driver/{driver}")]
+        public async Task<ActionResult<DriverSettlement>> GetByDriver(
+            string driver, string companyId, string settlementId)
+        {
+            var driverSettlements = await GetDriverSettlementsAsync(companyId, settlementId);
+        
+            var settlement = driverSettlements?.Where(s => s.Driver == driver)
+                .FirstOrDefault();
+
+            if (settlement == null)
+                return NotFound();
+
+            return Ok(settlement);
         }
 
         private async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync(
@@ -64,5 +71,21 @@ namespace Trucks.Server
             
             return driverSettlements;
         }        
+
+        private async Task<IEnumerable<DriverSettlement>> GetDriverSettlementsAsync(
+            string companyId, string settlementId)
+        {
+            IEnumerable<DriverSettlement> driverSettlements = null;
+
+            var settlement = await _settlementRepository.GetSettlementAsync(companyId, settlementId);
+
+            if (settlement != null)
+            {
+                var factory = new DriverSettlementFactory();
+                driverSettlements = factory.Create(settlement);
+            }            
+
+            return driverSettlements;
+        }
     }
 }        
