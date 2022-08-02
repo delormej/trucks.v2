@@ -36,29 +36,42 @@ namespace Trucks
         /// </summary>
         public async Task ConvertAsync(string companyId)
         {
+            const int limit = 4;
+
             var watermark = await GetWatermarkAsync(companyId);
 
             PantherClient panther = CreatePantherClient(companyId);
 
             await foreach(var download in panther.DownloadSettlementsAsync(
-                watermark.Filter(), 14))
+                watermark.Filter(), limit))
             {
-                string filename = download.Key;
-                var result = await _converter.UploadAsync(filename);
-                
-                var cloudPath = await _file.SaveAsync(filename);
+                try 
+                {
+                    string filename = download.Key;
+                    var result = await _converter.UploadAsync(filename);
+                    
+                    var cloudPath = await _file.SaveAsync(filename);
 
-                Console.WriteLine($"Uploaded {filename}");
+                    Console.WriteLine($"Uploaded {filename}");
 
-                var conversion = new ConvertState{
-                    ConversionJobId = result.id,
-                    Settlement = download.Value,
-                    LocalXlsPath = filename,
-                    CloudPath = cloudPath,
-                    UploadTimestampUtc = DateTime.UtcNow
-                };
-                
-                _conversionQueue.Add(conversion);
+                    var conversion = new ConvertState{
+                        ConversionJobId = result.id,
+                        Settlement = download.Value,
+                        LocalXlsPath = filename,
+                        CloudPath = cloudPath,
+                        UploadTimestampUtc = DateTime.UtcNow
+                    };
+                    
+                    var saveTask = _settlementRepository.SaveConvertStateAsync(conversion);
+                    
+                    _conversionQueue.Add(conversion);
+                    
+                    await saveTask;
+                }
+                catch (Exception e) 
+                {
+                    Console.WriteLine($"Error converting: {e.Message}");
+                }
             }
         }
 
@@ -160,7 +173,7 @@ namespace Trucks
 
             public Func<SettlementHistory, bool> Filter()
             {
-                return (s => s.SettlementDate > this.high && 
+                return (s => s.SettlementDate > this.high ||
                     s.SettlementDate < this.low);
             }
         }
@@ -171,9 +184,9 @@ namespace Trucks
             // decide this is the right way to do this or not.
             FirestoreRepository firestore = (FirestoreRepository)_settlementRepository;
             
-            var high = DateTime.Parse("2021-11-26T00:00:00Z"); //await firestore.GetLatestSettlementDate(companyId);
+            var high = await firestore.GetLatestSettlementDate(companyId); // DateTime.Parse("2021-11-26T00:00:00Z"); //
 
-            var low = DateTime.Parse("2022-03-04T00:00:00Z"); //await firestore.GetOldestSettlementDate(companyId);
+            var low = await firestore.GetOldestSettlementDate(companyId); // DateTime.Parse("2022-03-04T00:00:00Z"); //
 
             Console.WriteLine($"High: {high}, Low: {low}");
             return new Watermark() {low = low, high = high};
